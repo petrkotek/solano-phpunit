@@ -27,7 +27,7 @@ class SolanoLabs_PHPUnit_Util
     {
         if (!$workingDir) { $workingDir = getcwd(); }
 
-        if (!self::isRootRelativePath($path)) {
+        if (!SolanoLabs_PHPUnit_Util::isRootRelativePath($path)) {
             $path = $workingDir . DIRECTORY_SEPARATOR . $path;
         }
 
@@ -94,7 +94,7 @@ class SolanoLabs_PHPUnit_Util
      */
     public static function toAbsolutePath($path, $useIncludePath = false)
     {
-        if (self::isRootRelativePath($path)) {
+        if (SolanoLabs_PHPUnit_Util::isRootRelativePath($path)) {
             return $path;
         }
 
@@ -140,7 +140,11 @@ class SolanoLabs_PHPUnit_Util
     public static function shortenFilename($file, $stripPath = '')
     {
         if (!$stripPath) {
-            $stripPath = getcwd();
+            if (getenv('SOLANO_WORKING_DIRECTORY')) {
+                $stripPath = getenv('SOLANO_WORKING_DIRECTORY');
+            } else {
+                $stripPath = getcwd();
+            }
         }
         if (0 === strpos($file, $stripPath)) {
             $file = substr($file, strlen($stripPath) + 1);
@@ -148,18 +152,18 @@ class SolanoLabs_PHPUnit_Util
         return $file;
     }
 
+    // PHPUnit_Util_String removed in later versions of PHPUnit :(
+
     /**
-     * Converts a string to UTF-8 encoding.
-     * From https://github.com/sebastianbergmann/phpunit/blob/5.4/src/Util/String.php#L38
-     * (\PHPUnit\Util\String removed from newer versions PHPUnit)
+     * Convert string to UTF-8
      *
-     * @param string $string
+     * @param string                $string
      *
      * @return string
      */
     public static function convertToUtf8($string)
     {
-        if (!self::isUtf8($string)) {
+        if (!SolanoLabs_PHPUnit_Util::isUtf8($string)) {
             if (function_exists('mb_convert_encoding')) {
                 $string = mb_convert_encoding($string, 'UTF-8');
             } else {
@@ -171,14 +175,12 @@ class SolanoLabs_PHPUnit_Util
 
     /**
      * Checks a string for UTF-8 encoding.
-     * From https://github.com/sebastianbergmann/phpunit/blob/5.4/src/Util/String.php#L38
-     * (\PHPUnit\Util\String removed from newer versions PHPUnit)
      *
      * @param string $string
      *
      * @return bool
      */
-    public static function isUtf8($string)
+    private static function isUtf8($string)
     {
         $length = strlen($string);
         for ($i = 0; $i < $length; $i++) {
